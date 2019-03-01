@@ -19,6 +19,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -34,6 +38,7 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.exoplayer2.ParserException;
@@ -48,6 +53,9 @@ import com.google.android.exoplayer2.util.Util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -81,7 +89,7 @@ public class SampleChooserActivity extends Activity
       uris = new String[] {dataUri};
     } else {
       ArrayList<String> uriList = new ArrayList<>();
-      AssetManager assetManager = getAssets();
+      /*AssetManager assetManager = getAssets();
       try {
         for (String asset : assetManager.list("")) {
           if (asset.endsWith(".exolist.json")) {
@@ -95,6 +103,9 @@ public class SampleChooserActivity extends Activity
       uris = new String[uriList.size()];
       uriList.toArray(uris);
       Arrays.sort(uris);
+      */
+      uris = new String[1];
+      uris[0] = "http://192.168.0.101/media.exolist.json";
     }
 
     DemoApplication application = (DemoApplication) getApplication();
@@ -160,6 +171,11 @@ public class SampleChooserActivity extends Activity
   public boolean onChildClick(
       ExpandableListView parent, View view, int groupPosition, int childPosition, long id) {
     Sample sample = (Sample) view.getTag();
+    startVideo(sample);
+    return true;
+  }
+
+  private void startVideo(Sample sample) {
     startActivity(
         sample.buildIntent(
             /* context= */ this,
@@ -167,7 +183,6 @@ public class SampleChooserActivity extends Activity
             isNonNullAndChecked(randomAbrMenuItem)
                 ? PlayerActivity.ABR_ALGORITHM_RANDOM
                 : PlayerActivity.ABR_ALGORITHM_DEFAULT));
-    return true;
   }
 
   private void onSampleDownloadButtonClicked(Sample sample) {
@@ -245,6 +260,7 @@ public class SampleChooserActivity extends Activity
 
     private void readSampleGroup(JsonReader reader, List<SampleGroup> groups) throws IOException {
       String groupName = "";
+      String imgUrl = "";
       ArrayList<Sample> samples = new ArrayList<>();
 
       reader.beginObject();
@@ -253,6 +269,9 @@ public class SampleChooserActivity extends Activity
         switch (name) {
           case "name":
             groupName = reader.nextString();
+            break;
+          case "imgurl":
+            imgUrl = reader.nextString();
             break;
           case "samples":
             reader.beginArray();
@@ -270,13 +289,14 @@ public class SampleChooserActivity extends Activity
       }
       reader.endObject();
 
-      SampleGroup group = getGroup(groupName, groups);
+      SampleGroup group = getGroup(groupName, imgUrl, groups);
       group.samples.addAll(samples);
     }
 
     private Sample readEntry(JsonReader reader, boolean insidePlaylist) throws IOException {
       String sampleName = null;
       Uri uri = null;
+      String imgUrl = null;
       String extension = null;
       String drmScheme = null;
       String drmLicenseUrl = null;
@@ -292,6 +312,9 @@ public class SampleChooserActivity extends Activity
         switch (name) {
           case "name":
             sampleName = reader.nextString();
+            break;
+          case "imgurl":
+            imgUrl = reader.nextString();
             break;
           case "uri":
             uri = Uri.parse(reader.nextString());
@@ -352,10 +375,11 @@ public class SampleChooserActivity extends Activity
       if (playlistSamples != null) {
         UriSample[] playlistSamplesArray = playlistSamples.toArray(
             new UriSample[playlistSamples.size()]);
-        return new PlaylistSample(sampleName, drmInfo, playlistSamplesArray);
+        return new PlaylistSample(sampleName, imgUrl, drmInfo, playlistSamplesArray);
       } else {
         return new UriSample(
             sampleName,
+            imgUrl,
             drmInfo,
             uri,
             extension,
@@ -364,13 +388,13 @@ public class SampleChooserActivity extends Activity
       }
     }
 
-    private SampleGroup getGroup(String groupName, List<SampleGroup> groups) {
+    private SampleGroup getGroup(String groupName, String imgUrl, List<SampleGroup> groups) {
       for (int i = 0; i < groups.size(); i++) {
         if (Util.areEqual(groupName, groups.get(i).title)) {
           return groups.get(i);
         }
       }
-      SampleGroup group = new SampleGroup(groupName);
+      SampleGroup group = new SampleGroup(groupName, imgUrl);
       groups.add(group);
       return group;
     }
@@ -404,14 +428,43 @@ public class SampleChooserActivity extends Activity
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild,
         View convertView, ViewGroup parent) {
       View view = convertView;
+      Sample child = getChild(groupPosition, childPosition);
       if (view == null) {
         view = getLayoutInflater().inflate(R.layout.sample_list_item, parent, false);
-        View downloadButton = view.findViewById(R.id.download_button);
+        ImageButton downloadButton = (ImageButton) view.findViewById(R.id.download_button);
+        if (child.imgUrl != null) {
+          new DownloadImageTask(downloadButton).execute(child.imgUrl);
+        }
         downloadButton.setOnClickListener(this);
         downloadButton.setFocusable(false);
       }
-      initializeChildView(view, getChild(groupPosition, childPosition));
+
+      initializeChildView(view, child);
       return view;
+    }
+ // better answer 2: https://stackoverflow.com/questions/5776851/load-image-from-url
+    private void getBitmap(final String urlString, ImageButton imageBt) {
+      try {
+        final URL url = new URL(urlString);
+        final Uri uri = Uri.parse(urlString);
+        Activity bt = new Activity() {
+          @Override
+          protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+            Log.w(TAG, "URL Error loading bitmap from url {}: ");
+            try {
+              Bitmap bmp = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+              imageBt.setImageBitmap(bmp);
+            } catch (IOException e) {
+              Log.e(TAG, "IO Error loading bitmap from url {}: " + url, e);
+            } catch (Exception e) {
+              Log.e(TAG, "General Error loading bitmap from url {}: " + url, e);
+            }
+          }
+        };
+        downloadTracker.toggleDownload(bt, urlString, uri, "jpg");
+      } catch (MalformedURLException e) {
+        Log.e(TAG, "URL Error loading bitmap from url {}: " + urlString, e);
+      }
     }
 
     @Override
@@ -436,9 +489,22 @@ public class SampleChooserActivity extends Activity
       if (view == null) {
         view =
             getLayoutInflater()
-                .inflate(android.R.layout.simple_expandable_list_item_1, parent, false);
+                .inflate(R.layout.sample_list_item, parent, false);
       }
-      ((TextView) view).setText(getGroup(groupPosition).title);
+      SampleGroup group = getGroup(groupPosition);
+      ImageButton downloadButton = (ImageButton) view.findViewById(R.id.download_button);
+        if (group.coverImgUrl != null) {
+            new DownloadImageTask(downloadButton).execute(group.coverImgUrl);
+        }
+        downloadButton.setPadding(40, 0,20,0);
+        downloadButton.setOnClickListener(this);
+        downloadButton.setFocusable(false);
+
+
+      TextView textView = (TextView) view.findViewById(R.id.sample_title);
+      textView.setText(group.title);
+
+      new DownloadTextViewImageTask(textView).execute(group.coverImgUrl);
       return view;
     }
 
@@ -459,32 +525,40 @@ public class SampleChooserActivity extends Activity
 
     @Override
     public void onClick(View view) {
-      onSampleDownloadButtonClicked((Sample) view.getTag());
+     Sample s = (Sample) view.getTag();
+
+     if (s != null) {
+         startVideo(s);
+     }
+      //onSampleDownloadButtonClicked((Sample) view.getTag());
     }
 
     private void initializeChildView(View view, Sample sample) {
       view.setTag(sample);
       TextView sampleTitle = view.findViewById(R.id.sample_title);
       sampleTitle.setText(sample.name);
-
-      boolean canDownload = getDownloadUnsupportedStringId(sample) == 0;
+;
+      boolean canDownload = false; //getDownloadUnsupportedStringId(sample) == 0;
       boolean isDownloaded = canDownload && downloadTracker.isDownloaded(((UriSample) sample).uri);
       ImageButton downloadButton = view.findViewById(R.id.download_button);
       downloadButton.setTag(sample);
-      downloadButton.setColorFilter(
+      downloadButton.setPadding(60,0,20,0);
+      /*downloadButton.setColorFilter(
           canDownload ? (isDownloaded ? 0xFF42A5F5 : 0xFFBDBDBD) : 0xFFEEEEEE);
       downloadButton.setImageResource(
-          isDownloaded ? R.drawable.ic_download_done : R.drawable.ic_download);
+          isDownloaded ? R.drawable.ic_download_done : R.drawable.ic_download);*/
     }
   }
 
   private static final class SampleGroup {
 
     public final String title;
+    public final String coverImgUrl;
     public final List<Sample> samples;
 
-    public SampleGroup(String title) {
+    public SampleGroup(String title, String coverUrl) {
       this.title = title;
+      this.coverImgUrl = coverUrl;
       this.samples = new ArrayList<>();
     }
 
@@ -518,10 +592,12 @@ public class SampleChooserActivity extends Activity
 
   private abstract static class Sample {
     public final String name;
+    public final String imgUrl;
     public final DrmInfo drmInfo;
 
-    public Sample(String name, DrmInfo drmInfo) {
+    public Sample(String name, String imgUrl, DrmInfo drmInfo) {
       this.name = name;
+      this.imgUrl = imgUrl;
       this.drmInfo = drmInfo;
     }
 
@@ -547,12 +623,13 @@ public class SampleChooserActivity extends Activity
 
     public UriSample(
         String name,
+        String imgUrl,
         DrmInfo drmInfo,
         Uri uri,
         String extension,
         String adTagUri,
         String sphericalStereoMode) {
-      super(name, drmInfo);
+      super(name, imgUrl, drmInfo);
       this.uri = uri;
       this.extension = extension;
       this.adTagUri = adTagUri;
@@ -578,9 +655,10 @@ public class SampleChooserActivity extends Activity
 
     public PlaylistSample(
         String name,
+        String imgUrl,
         DrmInfo drmInfo,
         UriSample... children) {
-      super(name, drmInfo);
+      super(name, imgUrl, drmInfo);
       this.children = children;
     }
 
@@ -601,4 +679,59 @@ public class SampleChooserActivity extends Activity
 
   }
 
+  private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+    ImageView bmImage;
+
+    public DownloadImageTask(ImageView bmImage) {
+      this.bmImage = bmImage;
+    }
+
+    protected Bitmap doInBackground(String... urls) {
+      String urldisplay = urls[0];
+      Bitmap mIcon11 = null;
+      try {
+        InputStream in = new java.net.URL(urldisplay).openStream();
+        Log.d(TAG, "Image input stream established. "+urldisplay);
+        mIcon11 = BitmapFactory.decodeStream(in);
+      } catch (Exception e) {
+        Log.e(TAG, e.getMessage());
+      }
+      return mIcon11;
+    }
+
+    protected void onPostExecute(Bitmap result) {
+      bmImage.setImageBitmap(result);
+    }
+  }
+
+  private class DownloadTextViewImageTask extends AsyncTask<String, Void, Drawable> {
+    TextView textView;
+
+    public DownloadTextViewImageTask(TextView bmImage) {
+      this.textView = bmImage;
+    }
+
+    protected Drawable doInBackground(String... urls) {
+      String urldisplay = urls[0];
+      //Bitmap mIcon11 = null;
+      Drawable bd = null;
+      try {
+        InputStream in = new java.net.URL(urldisplay).openStream();
+        Log.d(TAG, "Image input stream established. "+urldisplay);
+        //mIcon11 = BitmapFactory.decodeStream(in);
+        bd = BitmapDrawable.createFromStream(in, urldisplay);
+      } catch (Exception e) {
+        Log.e(TAG, e.getMessage());
+      }
+      return bd;
+    }
+
+    protected void onPostExecute(Drawable result) {
+      //bmImage.setCompoundDrawables(null, null, result, null);
+      textView.setCompoundDrawables(null, result, null, null);
+      //textView.setCompoundDrawablePadding((int)context.getResources().getDimension(R.dimen.imagemenu_drawable_padding)); // 12dp
+      textView.setIncludeFontPadding(false);
+
+    }
+  }
 }

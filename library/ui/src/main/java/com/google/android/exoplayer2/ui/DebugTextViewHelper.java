@@ -99,7 +99,7 @@ public class DebugTextViewHelper implements Player.EventListener, Runnable {
 
   @SuppressLint("SetTextI18n")
   protected final void updateAndPost() {
-    textView.setText(getDebugString());
+    textView.setText("");//getDebugString());
     textView.removeCallbacks(this);
     textView.postDelayed(this, REFRESH_INTERVAL_MS);
   }

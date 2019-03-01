@@ -21,6 +21,13 @@
     android:gravity="center_vertical"
     android:orientation="horizontal">
 
+    <ImageButton
+        android:id="@+id/download_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:contentDescription="@string/exo_download_description" />
+
   <TextView android:id="@+id/sample_title"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
@@ -28,11 +35,5 @@
       android:gravity="center_vertical"
       android:minHeight="?android:attr/listPreferredItemHeightSmall"
       android:textAppearance="?android:attr/textAppearanceListItemSmall"/>
-
-  <ImageButton android:id="@+id/download_button"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:contentDescription="@string/exo_download_description"
-      android:background="@android:color/transparent"/>
 
 </LinearLayout>
