@@ -28,6 +28,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -131,8 +132,8 @@ public class PlayerActivity extends Activity
   }
 
   private PlayerView playerView;
-  private LinearLayout debugRootView;
-  private TextView debugTextView;
+  //private LinearLayout debugRootView;
+  //private TextView debugTextView;
 
   private DataSource.Factory dataSourceFactory;
   private SimpleExoPlayer player;
@@ -140,7 +141,7 @@ public class PlayerActivity extends Activity
   private MediaSource mediaSource;
   private DefaultTrackSelector trackSelector;
   private DefaultTrackSelector.Parameters trackSelectorParameters;
-  private DebugTextViewHelper debugViewHelper;
+  //private DebugTextViewHelper debugViewHelper;
   private TrackGroupArray lastSeenTrackGroupArray;
 
   private boolean startAutoPlay;
@@ -162,6 +163,8 @@ public class PlayerActivity extends Activity
       setTheme(R.style.PlayerTheme_Spherical);
     }
     super.onCreate(savedInstanceState);
+    getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+            WindowManager.LayoutParams.FLAG_FULLSCREEN);
     dataSourceFactory = buildDataSourceFactory();
     if (CookieHandler.getDefault() != DEFAULT_COOKIE_MANAGER) {
       CookieHandler.setDefault(DEFAULT_COOKIE_MANAGER);
@@ -170,8 +173,8 @@ public class PlayerActivity extends Activity
     setContentView(R.layout.player_activity);
     View rootView = findViewById(R.id.root);
     rootView.setOnClickListener(this);
-    debugRootView = findViewById(R.id.controls_root);
-    debugTextView = findViewById(R.id.debug_text_view);
+    //debugRootView = findViewById(R.id.controls_root);
+    //debugTextView = findViewById(R.id.debug_text_view);
 
     playerView = findViewById(R.id.player_view);
     playerView.setControllerVisibilityListener(this);
@@ -300,7 +303,7 @@ public class PlayerActivity extends Activity
 
   @Override
   public void onClick(View view) {
-    if (view.getParent() == debugRootView) {
+    /*if (view.getParent() == debugRootView) {
       MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
       if (mappedTrackInfo != null) {
         CharSequence title = ((Button) view).getText();
@@ -317,7 +320,7 @@ public class PlayerActivity extends Activity
         dialogPair.second.setAllowAdaptiveSelections(allowAdaptiveSelections);
         dialogPair.first.show();
       }
-    }
+    }*/
   }
 
   // PlaybackControlView.PlaybackPreparer implementation
@@ -331,7 +334,7 @@ public class PlayerActivity extends Activity
 
   @Override
   public void onVisibilityChange(int visibility) {
-    debugRootView.setVisibility(visibility);
+    //debugRootView.setVisibility(visibility);
   }
 
   // Internal methods
@@ -436,8 +439,8 @@ public class PlayerActivity extends Activity
       player.addAnalyticsListener(new EventLogger(trackSelector));
       playerView.setPlayer(player);
       playerView.setPlaybackPreparer(this);
-      debugViewHelper = new DebugTextViewHelper(player, debugTextView);
-      debugViewHelper.start();
+      //debugViewHelper = new DebugTextViewHelper(player, debugTextView);
+      //debugViewHelper.start();
 
       MediaSource[] mediaSources = new MediaSource[uris.length];
       for (int i = 0; i < uris.length; i++) {
@@ -527,8 +530,8 @@ public class PlayerActivity extends Activity
     if (player != null) {
       updateTrackSelectorParameters();
       updateStartPosition();
-      debugViewHelper.stop();
-      debugViewHelper = null;
+      //debugViewHelper.stop();
+      //debugViewHelper = null;
       player.release();
       player = null;
       mediaSource = null;
@@ -621,7 +624,7 @@ public class PlayerActivity extends Activity
   // User controls
 
   private void updateButtonVisibilities() {
-    debugRootView.removeAllViews();
+    //debugRootView.removeAllViews();
     if (player == null) {
       return;
     }
@@ -652,13 +655,13 @@ public class PlayerActivity extends Activity
         button.setText(label);
         button.setTag(i);
         button.setOnClickListener(this);
-        debugRootView.addView(button);
+        //debugRootView.addView(button);
       }
     }
   }
 
   private void showControls() {
-    debugRootView.setVisibility(View.VISIBLE);
+    //debugRootView.setVisibility(View.VISIBLE);
   }
 
   private void showToast(int messageId) {
