@@ -22,6 +22,7 @@ import android.content.res.AssetManager;
 import android.database.DataSetObserver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -103,7 +104,7 @@ public class SampleChooserActivity extends Activity {
     progressBarHolder = (FrameLayout) findViewById(R.id.progressBarHolder);
 
     SampleListLoader loaderTask = new SampleListLoader();
-    String[] uris = {"http://192.168.0.101/media.exolist.json"};
+    String[] uris = {"http://192.168.0.66/media.exolist.json"};
     loaderTask.execute(uris);
   }
 
@@ -271,7 +272,7 @@ public class SampleChooserActivity extends Activity {
       boolean drmMultiSession = false;
       String adTagUri = null;
       String sphericalStereoMode = null;
-
+      String bgcolor = null;
       reader.beginObject();
       while (reader.hasNext()) {
         String name = reader.nextName();
@@ -284,6 +285,9 @@ public class SampleChooserActivity extends Activity {
             break;
           case "uri":
             uri = Uri.parse(reader.nextString());
+            break;
+          case "bgcolor":
+            bgcolor = reader.nextString();
             break;
           case "extension":
             extension = reader.nextString();
@@ -327,6 +331,14 @@ public class SampleChooserActivity extends Activity {
               ? null
               : new DrmInfo(drmScheme, drmLicenseUrl, drmKeyRequestProperties, drmMultiSession);
 
+      int color = Color.WHITE;
+      if (bgcolor != null) {
+        try {
+          color = Color.parseColor(bgcolor);
+        } catch (IllegalArgumentException e) {
+          Log.w(TAG, "Wrong color code: " + bgcolor + " - " + e.getMessage());
+        }
+      }
         return new UriSample(
             sampleName,
             imgUrl,
@@ -334,7 +346,7 @@ public class SampleChooserActivity extends Activity {
             uri,
             extension,
             adTagUri,
-            sphericalStereoMode);
+            sphericalStereoMode, color);
 
     }
 

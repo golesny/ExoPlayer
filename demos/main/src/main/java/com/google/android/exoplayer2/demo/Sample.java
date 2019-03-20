@@ -7,11 +7,13 @@ public abstract class Sample {
     public final String name;
     public final String imgUrl;
     public final DrmInfo drmInfo;
+    public final int color;
 
-    public Sample(String name, String imgUrl, DrmInfo drmInfo) {
+    public Sample(String name, String imgUrl, DrmInfo drmInfo, int color) {
         this.name = name;
         this.imgUrl = imgUrl;
         this.drmInfo = drmInfo;
+        this.color = color;
     }
 
     public Intent buildIntent(

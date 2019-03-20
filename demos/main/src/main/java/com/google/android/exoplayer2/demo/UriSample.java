@@ -18,8 +18,9 @@ public final class UriSample extends Sample {
             Uri uri,
             String extension,
             String adTagUri,
-            String sphericalStereoMode) {
-        super(name, imgUrl, drmInfo);
+            String sphericalStereoMode,
+            int color) {
+        super(name, imgUrl, drmInfo, color);
         this.uri = uri;
         this.extension = extension;
         this.adTagUri = adTagUri;

@@ -62,9 +62,11 @@ public class CustomAdapter extends BaseAdapter{
 
         if (position < elements.size()) {
 
-            os_text.setText(elements.get(position).name);
-            if (imageCache.containsKey(elements.get(position).imgUrl)) {
-                Bitmap img = imageCache.get(elements.get(position).imgUrl);
+            final UriSample sample = elements.get(position);
+            os_text.setText(sample.name);
+            os_text.setBackgroundColor(sample.color);
+            if (imageCache.containsKey(sample.imgUrl)) {
+                Bitmap img = imageCache.get(sample.imgUrl);
                 os_img.setImageBitmap(img);
             }
 
@@ -73,7 +75,7 @@ public class CustomAdapter extends BaseAdapter{
                 @Override
                 public void onClick(View view) {
                     //Toast.makeText(context, "You Clicked "+elements.get(position).uri, Toast.LENGTH_SHORT).show();
-                    UriSample s = elements.get(position);
+                    UriSample s = sample;
                     frame.setBackgroundColor(0xFF009900);
                     if (s != null) {
                         context.startVideo(s);
