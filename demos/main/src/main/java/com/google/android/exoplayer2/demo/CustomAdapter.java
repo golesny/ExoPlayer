@@ -15,13 +15,15 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.exoplayer2.util.Log;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class CustomAdapter extends BaseAdapter{
-
+    private static final String TAG = "CustomAdapter";
     SampleChooserActivity context;
     List<UriSample> elements = new ArrayList<>();
     Map<String, Bitmap> imageCache = new HashMap<>();
@@ -63,25 +65,30 @@ public class CustomAdapter extends BaseAdapter{
         if (position < elements.size()) {
 
             final UriSample sample = elements.get(position);
-            os_text.setText(sample.name);
-            os_text.setBackgroundColor(sample.color);
-            if (imageCache.containsKey(sample.imgUrl)) {
-                Bitmap img = imageCache.get(sample.imgUrl);
-                os_img.setImageBitmap(img);
-            }
-
-            rowView.setOnClickListener(new OnClickListener() {
-
-                @Override
-                public void onClick(View view) {
-                    //Toast.makeText(context, "You Clicked "+elements.get(position).uri, Toast.LENGTH_SHORT).show();
-                    UriSample s = sample;
-                    frame.setBackgroundColor(0xFF009900);
-                    if (s != null) {
-                        context.startVideo(s);
-                    }
+            if (sample.isEmpty()) {
+                rowView.setVisibility(View.INVISIBLE);
+            } else {
+                rowView.setVisibility(View.VISIBLE);
+                os_text.setText(sample.name);
+                os_text.setBackgroundColor(sample.color);
+                if (imageCache.containsKey(sample.imgUrl)) {
+                    Bitmap img = imageCache.get(sample.imgUrl);
+                    os_img.setImageBitmap(img);
                 }
-            });
+
+                rowView.setOnClickListener(new OnClickListener() {
+
+                    @Override
+                    public void onClick(View view) {
+                        //Toast.makeText(context, "You Clicked "+elements.get(position).uri, Toast.LENGTH_SHORT).show();
+                        UriSample s = sample;
+                        frame.setBackgroundColor(0xFF009900);
+                        if (s != null) {
+                            context.startVideo(s);
+                        }
+                    }
+                });
+            }
         }
         return rowView;
     }
@@ -92,7 +99,7 @@ public class CustomAdapter extends BaseAdapter{
     }
 
     public void addElements(List<UriSample> res) {
-        elements.addAll(translatePositions(res));
+        elements = translatePositions(res);
     }
 
     /**
@@ -101,6 +108,7 @@ public class CustomAdapter extends BaseAdapter{
      * 9 10              3  6  9
      */
     private List<UriSample> translatePositions(List<UriSample> samples) {
+        Log.i(TAG, "translating video positions, "+samples.size()+" samples");
         int itemsPerRow = (int)Math.ceil(samples.size() / 3f);
         List<List<UriSample>> samplesRows = new ArrayList<>();
         samplesRows.add(new ArrayList<>());
@@ -110,6 +118,9 @@ public class CustomAdapter extends BaseAdapter{
         while (origidx < samples.size()) {
             int row = origidx % 3;
             samplesRows.get(row).add(samples.get(origidx++));
+        }
+        if (samplesRows.get(0).size() > samplesRows.get(1).size()) {
+            samplesRows.get(1).add(new UriSample());
         }
         List<UriSample> returnVal = new ArrayList<>();
         returnVal.addAll(samplesRows.get(0));

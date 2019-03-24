@@ -337,6 +337,8 @@ public class SampleChooserActivity extends Activity {
           color = Color.parseColor(bgcolor);
         } catch (IllegalArgumentException e) {
           Log.w(TAG, "Wrong color code: " + bgcolor + " - " + e.getMessage());
+          Toast.makeText(getApplicationContext(), R.string.wrong_color + ": "+bgcolor, Toast.LENGTH_LONG)
+                  .show();
         }
       }
         return new UriSample(

@@ -65,4 +65,6 @@
 
   <string name="random_abr">Enable random ABR</string>
 
+  <string name="wrong_color">Wrong color code</string>
+
 </resources>

@@ -11,6 +11,13 @@ public final class UriSample extends Sample {
     public final String adTagUri;
     public final String sphericalStereoMode;
 
+    public UriSample() {
+        super(null, "", null, 0);
+        this.uri = null;
+        this.extension = null;
+        this.adTagUri = null;
+        this.sphericalStereoMode = null;
+    }
     public UriSample(
             String name,
             String imgUrl,
@@ -38,4 +45,15 @@ public final class UriSample extends Sample {
                 .setAction(PlayerActivity.ACTION_VIEW);
     }
 
+    @Override
+    public String toString() {
+        return "UriSample("+uri+")";
+    }
+
+    public boolean isEmpty() {
+        if (name == null) {
+            return true;
+        }
+        return false;
+    }
 }
