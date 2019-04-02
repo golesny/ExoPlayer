@@ -17,9 +17,12 @@ package com.google.android.exoplayer2.demo;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -41,7 +44,9 @@ import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.PlaybackPreparer;
 import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.SeekParameters;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.drm.DefaultDrmSessionManager;
 import com.google.android.exoplayer2.drm.FrameworkMediaCrypto;
 import com.google.android.exoplayer2.drm.FrameworkMediaDrm;
@@ -79,6 +84,7 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.util.ErrorMessageProvider;
 import com.google.android.exoplayer2.util.EventLogger;
+import com.google.android.exoplayer2.util.Log;
 import com.google.android.exoplayer2.util.Util;
 import java.lang.reflect.Constructor;
 import java.net.CookieHandler;
@@ -90,7 +96,8 @@ import java.util.UUID;
 /** An activity that plays media using {@link SimpleExoPlayer}. */
 public class PlayerActivity extends Activity
     implements OnClickListener, PlaybackPreparer, PlayerControlView.VisibilityListener {
-
+  private static final String TAG = "PlayerActivity";
+  public static final String PREFFILE = "kidsplayer.startpositions.pref";
   public static final String DRM_SCHEME_EXTRA = "drm_scheme";
   public static final String DRM_LICENSE_URL_EXTRA = "drm_license_url";
   public static final String DRM_KEY_REQUEST_PROPERTIES_EXTRA = "drm_key_request_properties";
@@ -120,10 +127,10 @@ public class PlayerActivity extends Activity
   private static final String DRM_SCHEME_UUID_EXTRA = "drm_scheme_uuid";
 
   // Saved instance state keys.
-  private static final String KEY_TRACK_SELECTOR_PARAMETERS = "track_selector_parameters";
-  private static final String KEY_WINDOW = "window";
-  private static final String KEY_POSITION = "position";
-  private static final String KEY_AUTO_PLAY = "auto_play";
+  private static final String KEY_TRACK_SELECTOR_PARAMETERS_BASE = "track_selector_parameters";
+  private static final String KEY_WINDOW_BASE = "window";
+  private static final String KEY_POSITION_BASE = "position";
+  private static final String KEY_AUTO_PLAY_BASE = "auto_play";
 
   private static final CookieManager DEFAULT_COOKIE_MANAGER;
   static {
@@ -155,9 +162,9 @@ public class PlayerActivity extends Activity
   private ViewGroup adUiViewGroup;
 
   // Activity lifecycle
-
   @Override
   public void onCreate(Bundle savedInstanceState) {
+    Log.d(TAG, "onCreate savedInstanceState == null => "+(savedInstanceState == null));
     String sphericalStereoMode = getIntent().getStringExtra(SPHERICAL_STEREO_MODE_EXTRA);
     if (sphericalStereoMode != null) {
       setTheme(R.style.PlayerTheme_Spherical);
@@ -196,19 +203,27 @@ public class PlayerActivity extends Activity
       ((SphericalSurfaceView) playerView.getVideoSurfaceView()).setDefaultStereoMode(stereoMode);
     }
 
-    if (savedInstanceState != null) {
-      trackSelectorParameters = savedInstanceState.getParcelable(KEY_TRACK_SELECTOR_PARAMETERS);
-      startAutoPlay = savedInstanceState.getBoolean(KEY_AUTO_PLAY);
-      startWindow = savedInstanceState.getInt(KEY_WINDOW);
-      startPosition = savedInstanceState.getLong(KEY_POSITION);
-    } else {
+    startAutoPlay = true;
+    SharedPreferences sharedPreferences = getSharedPreferences(PREFFILE, Context.MODE_PRIVATE);
+    startWindow = sharedPreferences.getInt(getSampleKey(KEY_WINDOW_BASE), C.INDEX_UNSET);
+    startPosition = sharedPreferences.getLong(getSampleKey(KEY_POSITION_BASE), C.TIME_UNSET);
+
+    /*if (savedInstanceState != null) {
+      trackSelectorParameters = savedInstanceState.getParcelable(getSampleKey(KEY_TRACK_SELECTOR_PARAMETERS_BASE));
+      startAutoPlay = savedInstanceState.getBoolean(getSampleKey(KEY_AUTO_PLAY_BASE));
+      startWindow = savedInstanceState.getInt(getSampleKey(KEY_WINDOW_BASE));
+      startPosition = savedInstanceState.getLong(getSampleKey(KEY_POSITION_BASE));
+      Log.d(TAG, "resume to startPos="+startPosition);
+    } else { */
       trackSelectorParameters = new DefaultTrackSelector.ParametersBuilder().build();
+     /* Log.d(TAG, "clear start position = "+ startPosition);
       clearStartPosition();
-    }
+    }*/
   }
 
   @Override
   public void onNewIntent(Intent intent) {
+    Log.d(TAG, "onNewIntent");
     releasePlayer();
     releaseAdsLoader();
     clearStartPosition();
@@ -218,6 +233,7 @@ public class PlayerActivity extends Activity
   @Override
   public void onStart() {
     super.onStart();
+    Log.d(TAG, "onStart");
     if (Util.SDK_INT > 23) {
       initializePlayer();
       if (playerView != null) {
@@ -229,6 +245,7 @@ public class PlayerActivity extends Activity
   @Override
   public void onResume() {
     super.onResume();
+    Log.d(TAG, "onResume");
     if (Util.SDK_INT <= 23 || player == null) {
       initializePlayer();
       if (playerView != null) {
@@ -240,6 +257,7 @@ public class PlayerActivity extends Activity
   @Override
   public void onPause() {
     super.onPause();
+    Log.d(TAG, "onPause");
     if (Util.SDK_INT <= 23) {
       if (playerView != null) {
         playerView.onPause();
@@ -251,6 +269,7 @@ public class PlayerActivity extends Activity
   @Override
   public void onStop() {
     super.onStop();
+    Log.d(TAG, "onStop");
     if (Util.SDK_INT > 23) {
       if (playerView != null) {
         playerView.onPause();
@@ -262,6 +281,7 @@ public class PlayerActivity extends Activity
   @Override
   public void onDestroy() {
     super.onDestroy();
+    Log.d(TAG, "onDestroy");
     releaseAdsLoader();
   }
 
@@ -283,12 +303,13 @@ public class PlayerActivity extends Activity
 
   @Override
   public void onSaveInstanceState(Bundle outState) {
+    Log.d(TAG, "onSaveInstanceState(B)");
     updateTrackSelectorParameters();
     updateStartPosition();
-    outState.putParcelable(KEY_TRACK_SELECTOR_PARAMETERS, trackSelectorParameters);
-    outState.putBoolean(KEY_AUTO_PLAY, startAutoPlay);
-    outState.putInt(KEY_WINDOW, startWindow);
-    outState.putLong(KEY_POSITION, startPosition);
+    outState.putParcelable(getSampleKey(KEY_TRACK_SELECTOR_PARAMETERS_BASE), trackSelectorParameters);
+    outState.putBoolean(getSampleKey(KEY_AUTO_PLAY_BASE), startAutoPlay);
+    outState.putInt(getSampleKey(KEY_WINDOW_BASE), startWindow);
+    outState.putLong(getSampleKey(KEY_POSITION_BASE), startPosition);
   }
 
   // Activity input
@@ -567,6 +588,12 @@ public class PlayerActivity extends Activity
       startAutoPlay = player.getPlayWhenReady();
       startWindow = player.getCurrentWindowIndex();
       startPosition = Math.max(0, player.getContentPosition());
+      Log.d(TAG, "save startPos="+startPosition);
+      SharedPreferences sharedPreferences = getSharedPreferences(PREFFILE, Context.MODE_PRIVATE);
+      SharedPreferences.Editor edit = sharedPreferences.edit();
+      edit.putInt(getSampleKey(KEY_WINDOW_BASE), startWindow);
+      edit.putLong(getSampleKey(KEY_POSITION_BASE), startPosition);
+      edit.commit();
     }
   }
 
@@ -772,4 +799,8 @@ public class PlayerActivity extends Activity
     }
   }
 
+
+  private String getSampleKey(String key) {
+    return key  + "/" + getIntent().getDataString();
+  }
 }
