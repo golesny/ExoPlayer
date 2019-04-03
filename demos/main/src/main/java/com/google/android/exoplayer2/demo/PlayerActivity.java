@@ -588,12 +588,21 @@ public class PlayerActivity extends Activity
       startAutoPlay = player.getPlayWhenReady();
       startWindow = player.getCurrentWindowIndex();
       startPosition = Math.max(0, player.getContentPosition());
-      Log.d(TAG, "save startPos="+startPosition);
+      long duration = player.getDuration();
+      long restMillis = duration - startPosition;
+      float restPercentage = restMillis / (float)duration;
       SharedPreferences sharedPreferences = getSharedPreferences(PREFFILE, Context.MODE_PRIVATE);
-      SharedPreferences.Editor edit = sharedPreferences.edit();
-      edit.putInt(getSampleKey(KEY_WINDOW_BASE), startWindow);
-      edit.putLong(getSampleKey(KEY_POSITION_BASE), startPosition);
-      edit.commit();
+      SharedPreferences.Editor prefs = sharedPreferences.edit();
+      if (restMillis < 20000 || restPercentage < 0.05) {
+        Log.d(TAG, "remove startPos="+startPosition+" restMillis="+restMillis + " restPercentage="+restPercentage);
+        prefs.remove(getSampleKey(KEY_WINDOW_BASE));
+        prefs.remove(getSampleKey(KEY_POSITION_BASE));
+      } else {
+        Log.d(TAG, "save startPos="+startPosition);
+        prefs.putInt(getSampleKey(KEY_WINDOW_BASE), startWindow);
+        prefs.putLong(getSampleKey(KEY_POSITION_BASE), startPosition);
+      }
+      prefs.commit();
     }
   }
 
