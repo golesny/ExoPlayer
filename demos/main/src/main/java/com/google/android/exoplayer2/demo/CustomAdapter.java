@@ -21,10 +21,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class CustomAdapter extends BaseAdapter{
     private static final String TAG = "CustomAdapter";
     SampleChooserActivity context;
+    List<UriSample> allelements = new ArrayList<>();
     List<UriSample> elements = new ArrayList<>();
     Map<String, Bitmap> imageCache = new HashMap<>();
 
@@ -99,7 +101,8 @@ public class CustomAdapter extends BaseAdapter{
     }
 
     public void addElements(List<UriSample> res) {
-        elements = translatePositions(res);
+        elements = translatePositions(res); // no filter
+        allelements = res;
     }
 
     /**
@@ -127,5 +130,10 @@ public class CustomAdapter extends BaseAdapter{
         returnVal.addAll(samplesRows.get(1));
         returnVal.addAll(samplesRows.get(2));
         return returnVal;
+    }
+
+    public void setFilter(final SampleCategory cat) {
+        elements = translatePositions(allelements.stream().filter(s -> s.category == cat).collect(Collectors.toList()));
+        notifyDataSetChanged();
     }
 }

@@ -74,11 +74,12 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /** An activity for selecting from a list of media samples. */
-public class SampleChooserActivity extends Activity {
+public class SampleChooserActivity extends Activity implements OnClickListener {
 
   private static final String TAG = "SampleChooserActivity";
   private GridView gridview;
   private CustomAdapter customAdapter;
+  private LinearLayout menuLayout;
   AlphaAnimation inAnimation;
   AlphaAnimation outAnimation;
 
@@ -92,6 +93,9 @@ public class SampleChooserActivity extends Activity {
     setContentView(R.layout.grid_view_list_hori);
     getActionBar().hide();
     gridview = (GridView) findViewById(R.id.customgrid);
+    menuLayout = (LinearLayout) findViewById(R.id.menuLayout);
+
+    //menuLayout.addView(button1);
     customAdapter = new CustomAdapter(this);
     customAdapter.registerDataSetObserver(new DataSetObserver() {
       @Override
@@ -127,6 +131,22 @@ public class SampleChooserActivity extends Activity {
             /* context= */ this,
             false,
             PlayerActivity.ABR_ALGORITHM_DEFAULT));
+  }
+
+  @Override
+  public void onClick(View view) {
+    if (view instanceof ImageButton) {
+      ImageButton bt = (ImageButton)view;
+      if (bt.getContentDescription() != null) {
+        try {
+          SampleCategory cat = SampleCategory.valueOf(bt.getContentDescription().toString());
+          customAdapter.setFilter(cat);
+        } catch (Exception e) {
+          Toast.makeText(getApplicationContext(), R.string.wrong_category + "in button "+view.getId(), Toast.LENGTH_LONG)
+                  .show();
+        }
+      }
+    }
   }
 
   private int getDownloadUnsupportedStringId(Sample sample) {
@@ -273,6 +293,7 @@ public class SampleChooserActivity extends Activity {
       String adTagUri = null;
       String sphericalStereoMode = null;
       String bgcolor = null;
+      SampleCategory category = SampleCategory.VIDEOS;
       reader.beginObject();
       while (reader.hasNext()) {
         String name = reader.nextName();
@@ -321,6 +342,16 @@ public class SampleChooserActivity extends Activity {
             //Assertions.checkState(!insidePlaylist, "Invalid attribute on nested item: spherical_stereo_mode");
             sphericalStereoMode = reader.nextString();
             break;
+          case "category":
+            String cat = null;
+            try {
+              cat = reader.nextString();
+              category = SampleCategory.valueOf(cat);
+            } catch (IllegalArgumentException e) {
+              Toast.makeText(getApplicationContext(), R.string.wrong_category + ": "+cat, Toast.LENGTH_LONG)
+                      .show();
+            }
+            break;
           default:
             throw new ParserException("Unsupported attribute name: " + name);
         }
@@ -348,7 +379,7 @@ public class SampleChooserActivity extends Activity {
             uri,
             extension,
             adTagUri,
-            sphericalStereoMode, color);
+            sphericalStereoMode, color, category);
 
     }
 

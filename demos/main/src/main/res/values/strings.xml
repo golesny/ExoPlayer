@@ -67,4 +67,6 @@
 
   <string name="wrong_color">Wrong color code</string>
 
+  <string name="wrong_category">Wrong sample category</string>
+
 </resources>

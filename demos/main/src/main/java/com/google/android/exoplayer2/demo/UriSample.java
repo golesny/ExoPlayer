@@ -10,6 +10,7 @@ public final class UriSample extends Sample {
     public final String extension;
     public final String adTagUri;
     public final String sphericalStereoMode;
+    public final SampleCategory category;
 
     public UriSample() {
         super(null, "", null, 0);
@@ -17,6 +18,7 @@ public final class UriSample extends Sample {
         this.extension = null;
         this.adTagUri = null;
         this.sphericalStereoMode = null;
+        this.category = SampleCategory.VIDEOS;
     }
     public UriSample(
             String name,
@@ -26,12 +28,14 @@ public final class UriSample extends Sample {
             String extension,
             String adTagUri,
             String sphericalStereoMode,
-            int color) {
+            int color,
+            SampleCategory category) {
         super(name, imgUrl, drmInfo, color);
         this.uri = uri;
         this.extension = extension;
         this.adTagUri = adTagUri;
         this.sphericalStereoMode = sphericalStereoMode;
+        this.category = category;
     }
 
     @Override
