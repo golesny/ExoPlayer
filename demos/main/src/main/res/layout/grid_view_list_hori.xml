@@ -53,6 +53,15 @@
                 android:src="@drawable/booba" />
 
             <ImageButton
+                android:id="@+id/btMacWheelie"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:contentDescription="MAC_WHEELIE"
+                android:onClick="onClick"
+                android:scaleType="centerCrop"
+                android:src="@drawable/macwheelie" />
+
+            <ImageButton
                 android:id="@+id/btVideos"
                 android:layout_width="170dp"
                 android:layout_height="80dp"

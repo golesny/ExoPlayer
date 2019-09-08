@@ -5,6 +5,7 @@ public enum SampleCategory {
     TERRA_X,
     CHECKER,
     BOOBA,
+    MAC_WHEELIE,
     VIDEOS,
     AUDIOBOOKS
 }
