@@ -6,6 +6,7 @@ public enum SampleCategory {
     CHECKER,
     BOOBA,
     MAC_WHEELIE,
+    TRENK,
     VIDEOS,
     AUDIOBOOKS
 }

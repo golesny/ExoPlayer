@@ -8,12 +8,14 @@ public abstract class Sample {
     public final String imgUrl;
     public final DrmInfo drmInfo;
     public final int color;
+    public final SampleCategory category;
 
-    public Sample(String name, String imgUrl, DrmInfo drmInfo, int color) {
+    public Sample(String name, String imgUrl, DrmInfo drmInfo, int color, SampleCategory category) {
         this.name = name;
         this.imgUrl = imgUrl;
         this.drmInfo = drmInfo;
         this.color = color;
+        this.category = category;
     }
 
     public Intent buildIntent(
@@ -27,4 +29,10 @@ public abstract class Sample {
         return intent;
     }
 
+    public boolean isEmpty() {
+        if (name == null) {
+            return true;
+        }
+        return false;
+    }
 }

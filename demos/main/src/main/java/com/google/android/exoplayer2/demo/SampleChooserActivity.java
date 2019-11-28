@@ -17,60 +17,51 @@ package com.google.android.exoplayer2.demo;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
-import android.content.res.AssetManager;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.database.DataSetObserver;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.JsonReader;
-import android.view.Menu;
-import android.view.MenuInflater;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
-import android.widget.BaseExpandableListAdapter;
-import android.widget.ExpandableListView;
-import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 import com.google.android.exoplayer2.ParserException;
-import com.google.android.exoplayer2.offline.DownloadService;
+
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DataSourceInputStream;
 import com.google.android.exoplayer2.upstream.DataSpec;
 import com.google.android.exoplayer2.upstream.DefaultDataSource;
-import com.google.android.exoplayer2.util.Assertions;
-import com.google.android.exoplayer2.util.Log;
 import com.google.android.exoplayer2.util.Util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.security.GeneralSecurityException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /** An activity for selecting from a list of media samples. */
@@ -84,6 +75,7 @@ public class SampleChooserActivity extends Activity implements OnClickListener {
   AlphaAnimation outAnimation;
 
   FrameLayout progressBarHolder;
+  private Map<SampleCategory, ImageButton> menuLayoutButtons = new HashMap<>();
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -94,6 +86,19 @@ public class SampleChooserActivity extends Activity implements OnClickListener {
     getActionBar().hide();
     gridview = (GridView) findViewById(R.id.customgrid);
     menuLayout = (LinearLayout) findViewById(R.id.menuLayout);
+    // extract buttons
+    for (int i=0; i<menuLayout.getChildCount(); i++) {
+      View c = menuLayout.getChildAt(i);
+      if (c instanceof ImageButton) {
+        ImageButton bt = (ImageButton)c;
+        try {
+          SampleCategory cat = SampleCategory.valueOf(bt.getContentDescription().toString());
+          menuLayoutButtons.put(cat, bt);
+        } catch (Exception e) {
+          Toast.makeText(getApplicationContext(), R.string.wrong_category + "in button "+c.getId(), Toast.LENGTH_LONG).show();
+        }
+      }
+    }
 
     //menuLayout.addView(button1);
     customAdapter = new CustomAdapter(this);
@@ -203,7 +208,7 @@ public class SampleChooserActivity extends Activity implements OnClickListener {
       DataSource dataSource =
           new DefaultDataSource(context, userAgent, /* allowCrossProtocolRedirects= */ false);
       // download samples
-      List<UriSample> sampleLList = null;
+      List<Sample> sampleLList = null;
       String uri = uris[0];
         DataSpec dataSpec = new DataSpec(Uri.parse(uri));
         for (int j=0; j<10 && sampleLList == null; j++) {
@@ -228,7 +233,9 @@ public class SampleChooserActivity extends Activity implements OnClickListener {
           }
         }
       // download URLs (from media json file)
-      for (UriSample url : sampleLList) {
+      Set<SampleCategory> unavailableCat = new HashSet<>();
+      unavailableCat.addAll(Arrays.asList(SampleCategory.values()));
+      for (Sample url : sampleLList) {
         if (!cache.containsKey(url) && !this.isCancelled()) {
           // download image
           try {
@@ -236,11 +243,24 @@ public class SampleChooserActivity extends Activity implements OnClickListener {
             Log.d(TAG, "Downloading image " + url);
             Bitmap bd = BitmapFactory.decodeStream(in);
             cache.put(url.imgUrl, bd);
+            // remove cat from unavailable
+            unavailableCat.remove(url.category);
           } catch (Exception e) {
             Log.e(TAG, e.getMessage());
           }
         }
       }
+      // make button invisible that have no content
+      runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+          // Stuff that updates the UI
+          for (SampleCategory cat : unavailableCat){
+            menuLayoutButtons.get(cat).setVisibility(View.GONE);
+          }
+          menuLayout.invalidate();
+        }
+      });
       return result;
     }
 
@@ -270,8 +290,8 @@ public class SampleChooserActivity extends Activity implements OnClickListener {
       gridview.setVisibility(View.VISIBLE);
     }
 
-    private List<UriSample> readArray(JsonReader reader) throws IOException {
-      List<UriSample> result = new ArrayList<>();
+    private List<Sample> readArray(JsonReader reader) throws IOException {
+      List<Sample> result = new ArrayList<>();
       reader.beginArray();
       while (reader.hasNext()) {
         UriSample sample = readEntry(reader);
@@ -372,7 +392,8 @@ public class SampleChooserActivity extends Activity implements OnClickListener {
                   .show();
         }
       }
-        return new UriSample(
+
+      return new UriSample(
             sampleName,
             imgUrl,
             drmInfo,

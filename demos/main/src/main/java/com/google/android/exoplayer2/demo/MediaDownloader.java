@@ -2,25 +2,15 @@ package com.google.android.exoplayer2.demo;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.media.Image;
 import android.os.AsyncTask;
-import android.util.Pair;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.google.android.exoplayer2.util.Log;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 
 public class MediaDownloader extends AsyncTask<String, Void, Map<String, Bitmap>> {
     private static final String TAG = "MediaDownloader";
@@ -34,15 +24,15 @@ public class MediaDownloader extends AsyncTask<String, Void, Map<String, Bitmap>
     }
 
     /**
-     * These URLs will be dpwnloaded.
-     * @param url
+     * These URLs will be downloaded.
+     * @param url the url
      */
     public void addUrl(String url) {
         queue.add(url);
     }
 
     public void startExecuting() {
-     execute(queue.toArray(new String[queue.size()]));
+     execute(queue.toArray(new String[0]));
     }
 
     protected Map<String, Bitmap> doInBackground(String... args) {

@@ -2,18 +2,14 @@ package com.google.android.exoplayer2.demo;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.exoplayer2.util.Log;
 
@@ -26,8 +22,8 @@ import java.util.stream.Collectors;
 public class CustomAdapter extends BaseAdapter{
     private static final String TAG = "CustomAdapter";
     SampleChooserActivity context;
-    List<UriSample> allelements = new ArrayList<>();
-    List<UriSample> elements = new ArrayList<>();
+    List<Sample> allelements = new ArrayList<>();
+    List<Sample> elements = new ArrayList<>();
     Map<String, Bitmap> imageCache = new HashMap<>();
 
     private static LayoutInflater inflater=null;
@@ -66,7 +62,7 @@ public class CustomAdapter extends BaseAdapter{
 
         if (position < elements.size()) {
 
-            final UriSample sample = elements.get(position);
+            final Sample sample = elements.get(position);
             if (sample.isEmpty()) {
                 rowView.setVisibility(View.INVISIBLE);
             } else {
@@ -83,11 +79,9 @@ public class CustomAdapter extends BaseAdapter{
                     @Override
                     public void onClick(View view) {
                         //Toast.makeText(context, "You Clicked "+elements.get(position).uri, Toast.LENGTH_SHORT).show();
-                        UriSample s = sample;
+                        Sample s = sample;
                         frame.setBackgroundColor(0xFF009900);
-                        if (s != null) {
-                            context.startVideo(s);
-                        }
+                        context.startVideo(s);
                     }
                 });
             }
@@ -100,7 +94,7 @@ public class CustomAdapter extends BaseAdapter{
         notifyDataSetChanged();
     }
 
-    public void addElements(List<UriSample> res) {
+    public void addElements(List<Sample> res) {
         elements = translatePositions(res); // no filter
         allelements = res;
     }
@@ -110,10 +104,10 @@ public class CustomAdapter extends BaseAdapter{
      * 5  6  7  8   -->  2  5  8
      * 9 10              3  6  9
      */
-    private List<UriSample> translatePositions(List<UriSample> samples) {
+    private List<Sample> translatePositions(List<Sample> samples) {
         Log.i(TAG, "translating video positions, "+samples.size()+" samples");
         int itemsPerRow = (int)Math.ceil(samples.size() / 3f);
-        List<List<UriSample>> samplesRows = new ArrayList<>();
+        List<List<Sample>> samplesRows = new ArrayList<>();
         samplesRows.add(new ArrayList<>());
         samplesRows.add(new ArrayList<>());
         samplesRows.add(new ArrayList<>());
@@ -125,7 +119,7 @@ public class CustomAdapter extends BaseAdapter{
         if (samplesRows.get(0).size() > samplesRows.get(1).size()) {
             samplesRows.get(1).add(new UriSample());
         }
-        List<UriSample> returnVal = new ArrayList<>();
+        List<Sample> returnVal = new ArrayList<>();
         returnVal.addAll(samplesRows.get(0));
         returnVal.addAll(samplesRows.get(1));
         returnVal.addAll(samplesRows.get(2));

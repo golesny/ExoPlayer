@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#999999"
@@ -20,16 +19,17 @@
                 android:id="@+id/btEsWarEinmal"
                 android:layout_width="170dp"
                 android:layout_height="80dp"
-                android:contentDescription="ES_WAR_EINMAL"
+                android:contentDescription="@string/CATEGORY_es_war_einmal"
                 android:onClick="onClick"
                 android:scaleType="centerCrop"
-                android:src="@drawable/eswareinmal" />
+                android:src="@drawable/eswareinmal"
+                android:visibility="visible" />
 
             <ImageButton
                 android:id="@+id/btTerraX"
                 android:layout_width="170dp"
                 android:layout_height="80dp"
-                android:contentDescription="TERRA_X"
+                android:contentDescription="@string/CATEGORY_terra_x"
                 android:onClick="onClick"
                 android:scaleType="centerCrop"
                 android:src="@drawable/terrax" />
@@ -38,7 +38,7 @@
                 android:id="@+id/btChecker"
                 android:layout_width="170dp"
                 android:layout_height="80dp"
-                android:contentDescription="CHECKER"
+                android:contentDescription="@string/CATEGRORY_checker"
                 android:onClick="onClick"
                 android:scaleType="centerCrop"
                 android:src="@drawable/checker" />
@@ -47,25 +47,34 @@
                 android:id="@+id/btBooba"
                 android:layout_width="170dp"
                 android:layout_height="80dp"
-                android:contentDescription="BOOBA"
+                android:contentDescription="@string/CATEGORY_booba"
                 android:onClick="onClick"
                 android:scaleType="centerCrop"
                 android:src="@drawable/booba" />
 
             <ImageButton
                 android:id="@+id/btMacWheelie"
-                android:layout_width="match_parent"
+                android:layout_width="170dp"
                 android:layout_height="80dp"
-                android:contentDescription="MAC_WHEELIE"
+                android:contentDescription="@string/CATEGORY_mac_wheelie"
                 android:onClick="onClick"
                 android:scaleType="centerCrop"
                 android:src="@drawable/macwheelie" />
 
             <ImageButton
+                android:id="@+id/btTrenk"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:contentDescription="@string/CATEGORY_trenk"
+                android:onClick="onClick"
+                android:scaleType="centerCrop"
+                android:src="@drawable/trenk" />
+
+            <ImageButton
                 android:id="@+id/btVideos"
                 android:layout_width="170dp"
                 android:layout_height="80dp"
-                android:contentDescription="VIDEOS"
+                android:contentDescription="@string/CATEGORY_videos"
                 android:onClick="onClick"
                 android:scaleType="centerCrop"
                 android:src="@drawable/videos" />
@@ -74,7 +83,7 @@
                 android:id="@+id/btAudiobook"
                 android:layout_width="170dp"
                 android:layout_height="80dp"
-                android:contentDescription="AUDIOBOOKS"
+                android:contentDescription="@string/CATEGORY_audiobooks"
                 android:onClick="onClick"
                 android:scaleType="centerCrop"
                 android:src="@drawable/hoerspiele" />
@@ -89,7 +98,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_margin="6dp"
             android:orientation="horizontal">
 
