@@ -63,12 +63,21 @@
 
             <ImageButton
                 android:id="@+id/btTrenk"
-                android:layout_width="match_parent"
+                android:layout_width="170dp"
                 android:layout_height="80dp"
                 android:contentDescription="@string/CATEGORY_trenk"
                 android:onClick="onClick"
                 android:scaleType="centerCrop"
                 android:src="@drawable/trenk" />
+
+            <ImageButton
+                android:id="@+id/btJimKnopf"
+                android:layout_width="170dp"
+                android:layout_height="80dp"
+                android:contentDescription="@string/CATEGORY_jimknopf"
+                android:onClick="onClick"
+                android:scaleType="centerCrop"
+                android:src="@drawable/jimknopf" />
 
             <ImageButton
                 android:id="@+id/btVideos"
