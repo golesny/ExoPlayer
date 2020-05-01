@@ -72,6 +72,7 @@ public class CustomAdapter extends BaseAdapter{
                 if (imageCache.containsKey(sample.imgUrl)) {
                     Bitmap img = imageCache.get(sample.imgUrl);
                     os_img.setImageBitmap(img);
+                    os_img.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 }
 
                 rowView.setOnClickListener(new OnClickListener() {

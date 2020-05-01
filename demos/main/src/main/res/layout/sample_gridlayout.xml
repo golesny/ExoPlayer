@@ -7,29 +7,27 @@
     android:paddingVertical="3dp">
 
     <RelativeLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/sample_frame"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="129dp"
+        android:layout_height="wrap_content"
         android:background="#ffffff"
         android:paddingHorizontal="4dp"
-        android:paddingVertical="3dp"
-        >
+        android:paddingVertical="3dp">
 
-    <ImageView
-        android:id="@+id/os_images"
-        android:layout_width="129dp"
-        android:layout_height="87dp"
-        android:scaleType="centerCrop"
-        android:src="@drawable/exo_notification_small_icon" />
+        <ImageView
+            android:id="@+id/os_images"
+            android:layout_width="129dp"
+            android:layout_height="86dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/eswareinmal" />
 
-    <TextView
-        android:id="@+id/os_texts"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/os_images"
-        android:gravity="center"
-        android:textAlignment="center"
-        android:textSize="12sp" />
+        <TextView
+            android:id="@+id/os_texts"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/os_images"
+            android:gravity="center"
+            android:textAlignment="center"
+            android:textSize="12sp" />
     </RelativeLayout>
 </RelativeLayout>
