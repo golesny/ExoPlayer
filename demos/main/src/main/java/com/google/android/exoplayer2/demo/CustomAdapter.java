@@ -1,6 +1,7 @@
 package com.google.android.exoplayer2.demo;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TabHost;
 import android.widget.TextView;
 
 import com.google.android.exoplayer2.util.Log;
@@ -25,6 +27,7 @@ public class CustomAdapter extends BaseAdapter{
     List<Sample> allelements = new ArrayList<>();
     List<Sample> elements = new ArrayList<>();
     Map<String, Bitmap> imageCache = new HashMap<>();
+    SampleCategory cat = SampleCategory.VIDEOS;
 
     private static LayoutInflater inflater=null;
 
@@ -96,7 +99,6 @@ public class CustomAdapter extends BaseAdapter{
     }
 
     public void addElements(List<Sample> res) {
-        elements = translatePositions(res); // no filter
         allelements = res;
     }
 
@@ -128,7 +130,18 @@ public class CustomAdapter extends BaseAdapter{
     }
 
     public void setFilter(final SampleCategory cat) {
-        elements = translatePositions(allelements.stream().filter(s -> s.category == cat).collect(Collectors.toList()));
+        this.cat = cat;
+        updateFilteredElements();
+    }
+
+    public void updateFilteredElements() {
+        internalUpdateFilteredElements(context.getSharedPreferences(PlayerActivity.PREFFILE, Context.MODE_PRIVATE));
+    }
+
+    private void internalUpdateFilteredElements(SharedPreferences sharedPreferences) {
+        long max = sharedPreferences.getInt(PlayerActivity.getCategoryKey(PlayerActivity.KEY_LAST_ITEM_COUNT_BASE, cat.name()), 1);
+        Log.d(TAG, "update Filtered Elements: maxItems="+max);
+        elements = translatePositions(allelements.stream().filter(s -> s.category == cat).limit(max).collect(Collectors.toList()));
         notifyDataSetChanged();
     }
 }

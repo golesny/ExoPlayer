@@ -98,6 +98,8 @@ public class PlayerActivity extends Activity
 
   public static final String ACTION_VIEW = "com.google.android.exoplayer.demo.action.VIEW";
   public static final String EXTENSION_EXTRA = "extension";
+  public static final String CATEGORY = "category";
+  public static final String POSITION_IN_CATEGORY = "category_position";
 
   public static final String ACTION_VIEW_LIST =
       "com.google.android.exoplayer.demo.action.VIEW_LIST";
@@ -123,6 +125,8 @@ public class PlayerActivity extends Activity
   private static final String KEY_WINDOW_BASE = "window";
   private static final String KEY_POSITION_BASE = "position";
   private static final String KEY_AUTO_PLAY_BASE = "auto_play";
+  /* number of items that within the category of current sample, will be increased at the end of each item */
+  public static final String KEY_LAST_ITEM_COUNT_BASE = "last_items_count";
 
   private static final CookieManager DEFAULT_COOKIE_MANAGER;
   static {
@@ -250,6 +254,7 @@ public class PlayerActivity extends Activity
   public void onPause() {
     super.onPause();
     Log.d(TAG, "onPause");
+    updateStartPosition();
     if (Util.SDK_INT <= 23) {
       if (playerView != null) {
         playerView.onPause();
@@ -585,10 +590,17 @@ public class PlayerActivity extends Activity
       float restPercentage = restMillis / (float)duration;
       SharedPreferences sharedPreferences = getSharedPreferences(PREFFILE, Context.MODE_PRIVATE);
       SharedPreferences.Editor prefs = sharedPreferences.edit();
+
+      String catKey = getCategoryKey(KEY_LAST_ITEM_COUNT_BASE, getIntent().getStringExtra(CATEGORY));
+      int currentSavedLastItemCount = sharedPreferences.getInt(catKey, 1);
       if (restMillis < 20000 || restPercentage < 0.05) {
-        Log.d(TAG, "remove startPos="+startPosition+" restMillis="+restMillis + " restPercentage="+restPercentage);
-        prefs.remove(getSampleKey(KEY_WINDOW_BASE));
-        prefs.remove(getSampleKey(KEY_POSITION_BASE));
+          int intentNumber = getIntent().getIntExtra(PlayerActivity.POSITION_IN_CATEGORY, 0);
+          Log.d(TAG, "remove startPos="+startPosition+" restMillis="+restMillis + " restPercentage="+restPercentage+ " currentSavedLastItemCount="+currentSavedLastItemCount+" intentNumber="+intentNumber);
+            if (intentNumber >= currentSavedLastItemCount){
+                prefs.putInt(catKey, intentNumber + 1);
+            }
+            prefs.remove(getSampleKey(KEY_WINDOW_BASE));
+            prefs.remove(getSampleKey(KEY_POSITION_BASE));
       } else {
         Log.d(TAG, "save startPos="+startPosition);
         prefs.putInt(getSampleKey(KEY_WINDOW_BASE), startWindow);
@@ -803,5 +815,9 @@ public class PlayerActivity extends Activity
 
   private String getSampleKey(String key) {
     return key  + "/" + getIntent().getDataString();
+  }
+
+  public static String getCategoryKey(String key, String category) {
+    return key + "/" + category;
   }
 }

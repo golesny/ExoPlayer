@@ -17,6 +17,7 @@ package com.google.android.exoplayer2.demo;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.database.DataSetObserver;
@@ -128,6 +129,13 @@ public class SampleChooserActivity extends Activity implements OnClickListener {
   @Override
   public void onStop() {
     super.onStop();
+  }
+
+  @Override
+  protected void onResume() {
+    super.onResume();
+    Log.d(TAG, "onResume()");
+    customAdapter.updateFilteredElements();
   }
 
   protected void startVideo(Sample sample) {
@@ -259,6 +267,7 @@ public class SampleChooserActivity extends Activity implements OnClickListener {
             menuLayoutButtons.get(cat).setVisibility(View.GONE);
           }
           menuLayout.invalidate();
+          customAdapter.setFilter(SampleCategory.values()[0]);
         }
       });
       return result;
@@ -298,7 +307,20 @@ public class SampleChooserActivity extends Activity implements OnClickListener {
         result.add(sample);
       }
       reader.endArray();
+      fillPosInCategory(result);
       return result;
+    }
+
+    private void fillPosInCategory(List<Sample> sampleList) {
+      Map<SampleCategory, Integer> catmap = new HashMap<>();
+      for (SampleCategory c : SampleCategory.values()) {
+        catmap.put(c, 0);
+      }
+      for (int i=0; i<sampleList.size(); i++) {
+        int idx = catmap.get(sampleList.get(i).category) + 1;
+        catmap.put(sampleList.get(i).category, idx);
+        sampleList.get(i).setPosInCategory(idx);
+      }
     }
 
     private UriSample readEntry(JsonReader reader) throws IOException {
