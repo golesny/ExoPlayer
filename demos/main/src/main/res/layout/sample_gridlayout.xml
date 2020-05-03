@@ -24,7 +24,7 @@
         <TextView
             android:id="@+id/os_texts"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="18dp"
             android:layout_below="@+id/os_images"
             android:gravity="center"
             android:textAlignment="center"
