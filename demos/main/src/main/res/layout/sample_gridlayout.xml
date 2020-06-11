@@ -19,7 +19,7 @@
             android:layout_width="129dp"
             android:layout_height="86dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/eswareinmal" />
+            android:src="@drawable/exo_notification_small_icon" />
 
         <TextView
             android:id="@+id/os_texts"

@@ -62,6 +62,15 @@
                 android:src="@drawable/macwheelie" />
 
             <ImageButton
+                android:id="@+id/btPipi"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:contentDescription="@string/CATEGORY_pipi"
+                android:onClick="onClick"
+                android:scaleType="centerCrop"
+                android:src="@drawable/pipi" />
+
+            <ImageButton
                 android:id="@+id/btTrenk"
                 android:layout_width="170dp"
                 android:layout_height="80dp"
