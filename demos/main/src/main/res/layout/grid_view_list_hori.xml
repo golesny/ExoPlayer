@@ -89,6 +89,15 @@
                 android:src="@drawable/jimknopf" />
 
             <ImageButton
+                android:id="@+id/btSuperWings"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:contentDescription="@string/CATEGORY_superwings"
+                android:onClick="onClick"
+                android:scaleType="centerCrop"
+                android:src="@drawable/superwings" />
+
+            <ImageButton
                 android:id="@+id/btVideos"
                 android:layout_width="170dp"
                 android:layout_height="80dp"

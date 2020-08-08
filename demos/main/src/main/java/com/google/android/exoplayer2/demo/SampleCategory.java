@@ -7,6 +7,7 @@ public enum SampleCategory {
     BOOBA,
     MAC_WHEELIE,
     PIPI,
+    SUPERWINGS,
     TRENK,
     JIMKNOPF,
     VIDEOS,

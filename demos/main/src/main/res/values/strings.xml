@@ -79,5 +79,6 @@
   <string name="CATEGORY_jimknopf">JIMKNOPF</string>
   <string name="CATEGORY_videos">VIDEOS</string>
   <string name="CATEGORY_audiobooks">AUDIOBOOKS</string>
+    <string name="CATEGORY_superwings">SUPERWINGS</string>
 
 </resources>
